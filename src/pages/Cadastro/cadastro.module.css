@@ -1,0 +1,14 @@
+.fundoImagem {
+  background-image: url('../../assets/bg-login.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.botaoEntrar {
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.botaoEntrar:active {
+  transform: scale(0.98);
+}

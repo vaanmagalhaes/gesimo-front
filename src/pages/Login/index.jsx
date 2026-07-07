@@ -1,6 +1,6 @@
 // src/pages/Login/index.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Ferramenta para mudar de página
+import { useNavigate, Link } from "react-router-dom"; // Ferramenta para mudar de página
 import { Eye, EyeOff } from "lucide-react"; // Ícones minimalistas para a senha
 import { api } from "../../services/api";
 import estilos from "./Login.module.css";
@@ -167,6 +167,16 @@ export default function Login() {
             >
               {carregando ? "Validando..." : "Entrar"}
             </button>
+
+            {/* Link para Cadastro */}
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">
+                Ainda não tem uma conta?{" "}
+                <Link to="/cadastro" className="text-blue-600 font-medium hover:underline">
+                  Cadastre-se
+                </Link>
+              </p>
+            </div>
           </form>
         </div>
       </div>

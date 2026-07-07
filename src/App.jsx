@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
+import Cadastro from './pages/Cadastro';
 import Dashboard from './pages/Dashboard'; 
 import Locadores from './pages/Locadores';
 import Locatarios from './pages/Locatarios';
@@ -15,6 +16,9 @@ export default function App() {
       <Routes>
         {/* <!-- Rota raiz (/) renderiza o Login --> */}
         <Route path="/" element={<Login />} />
+        
+        {/* <!-- Rota /cadastro renderiza o Cadastro --> */}
+        <Route path="/cadastro" element={<Cadastro />} />
         
         {/* <!-- Rota /dashboard renderiza o Dashboard --> */}
         <Route path="/dashboard" element={<Dashboard />} />

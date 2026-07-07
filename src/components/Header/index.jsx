@@ -35,12 +35,7 @@ export default function Header({ nome }) {
       {/* Área de Perfil e Notificações */}
       <div className="flex items-center gap-6">
         
-        {/* Sino de Notificação */}
-        <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors group">
-          <Bell size={20} />
-          {/* Indicador de alerta (apenas se houver notificações) */}
-          <span className="absolute top-1 right-1.5 w-2 h-2 bg-orange-500 rounded-full border-2 border-white box-content transition-transform group-hover:scale-110"></span>
-        </button>
+
 
         {/* Divisor vertical sutil */}
         <div className="h-8 w-px bg-gray-200"></div>

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom"; // Ferramenta para mudar de página
 import { Eye, EyeOff } from "lucide-react"; // Ícones minimalistas para a senha
 import { api } from "../../services/api";
-import estilos from "./Login.module.css";
+import estilos from "./login.module.css";
 import logo from "../../assets/logo.png";
 
 export default function Login() {

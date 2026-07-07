@@ -1,0 +1,219 @@
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from 'react-router-dom';
+import { Plus, Home, Eye, Edit2, FileText, Trash2 } from "lucide-react"; 
+import Sidebar from "../../components/Sidebar";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
+import Badge from "../../components/Badge";
+import Button from "../../components/Button";
+import DataTable from "../../components/DataTable";
+import ModalContainer from "../../components/ModalContainer";
+import FormularioImovel from "../../components/Formularios/FormularioImovel";
+import MenuAcoes from "../../components/MenuAcoes";
+import DetalhesImovel from '../Imoveis/detalhes';
+import { api } from "../../services/api";
+
+export default function Imoveis() {
+
+  const navigate = useNavigate();
+
+  const [menuAberto, setMenuAberto] = useState(() => {
+    const preferenciaSalva = localStorage.getItem("@gesimo:menuAberto");
+    return preferenciaSalva !== null ? JSON.parse(preferenciaSalva) : true;
+  });
+
+  const [nomeUsuario, setNomeUsuario] = useState("");
+  const [imoveis, setImoveis] = useState([]);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const [modalAberto, setModalAberto] = useState(false);
+
+  // Colunas espelhadas EXATAMENTE como no protótipo image_fb251e.jpg
+  const colunasDaTabela = [
+    { key: "imovelExibicao", label: "Imóvel" },
+    { key: "tipoExibicao", label: "Tipo" },
+    { key: "enderecoExibicao", label: "Endereço" },
+    { key: "valorExibicao", label: "Valor" },
+    { key: "statusBadge", label: "Status" },
+    { key: "acoes", label: "Ações" },
+  ];
+
+  // Função para criar as tags coloridas de status baseadas no Prisma
+  const renderizarBadgeStatus = (status) => {
+    switch (status) {
+      case "DISPONIVEL":
+        return (
+          <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium border border-blue-200">
+            Disponível
+          </span>
+        );
+      case "ALUGADO":
+        return (
+          <span className="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-full text-xs font-medium border border-emerald-200">
+            Alugado
+          </span>
+        );
+      case "VENDIDO":
+        return (
+          <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium border border-gray-200">
+            Vendido
+          </span>
+        );
+      case "INATIVO":
+        return (
+          <span className="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-medium border border-red-200">
+            Inativo
+          </span>
+        );
+      default: // Para status personalizados que o PO possa pedir depois (ex: Em Negociação)
+        return (
+          <span className="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-medium border border-orange-200">
+            Em Negociação
+          </span>
+        );
+    }
+  };
+
+  // Função para capitalizar palavras (ex: APARTAMENTO -> Apartamento)
+  const formatarPalavra = (palavra) => {
+    if (!palavra) return "";
+    return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
+  };
+
+  const carregarImoveis = useCallback(async () => {
+    const token = localStorage.getItem("@gesimo:token");
+
+    try {
+      const resposta = await api.get(`/imoveis?page=${paginaAtual}&limit=10`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const dadosBrutos = resposta.data.data || resposta.data;
+
+      // Formatando os dados para a interface limpa
+      const imoveisFormatados = dadosBrutos.map((imovel) => {
+        const bairro = imovel.endereco?.bairro || "";
+        const rua = imovel.endereco?.rua || "";
+        const numero = imovel.endereco?.numero || "S/N";
+        const tipoFormatado = formatarPalavra(imovel.tipologia);
+
+        return {
+          ...imovel,
+          imovelExibicao: `${tipoFormatado} ${bairro}`,
+          tipoExibicao: tipoFormatado,
+          enderecoExibicao: `${rua}, ${numero}`,
+          valorExibicao: "R$ 3.500,00",
+
+          statusBadge: (
+            <Badge variant={imovel.status}>
+              {formatarPalavra(imovel.status)}
+            </Badge>
+          ),
+
+          // 👇 AÇÕES DINÂMICAS INJETADAS NA TABELA 👇
+          acoes: (
+            <div className="flex justify-end">
+              <MenuAcoes 
+                opcoes={[
+ { 
+                    label: 'Visualizar imóvel', 
+                    icon: Eye, 
+                    onClick: () => navigate(`/imoveis/${imovel.id}`) 
+                  },
+                  { 
+                    label: 'Editar', 
+                    icon: Edit2, 
+                    onClick: () => console.log(`Editar imóvel ${imovel.id}`) 
+                  },
+                  { 
+                    label: 'Ver contratos', 
+                    icon: FileText, 
+                    onClick: () => console.log(`Contratos do imóvel ${imovel.id}`) 
+                  },
+                  { 
+                    label: 'Deletar imóvel', 
+                    icon: Trash2, 
+                    danger: true, // Texto em vermelho
+                    onClick: () => console.log(`Soft delete no imóvel ${imovel.id}`) 
+                  },
+                ]} 
+              />
+            </div>
+          ),
+        };
+      });
+
+      setImoveis(imoveisFormatados);
+      setTotalPaginas(resposta.data.meta?.totalPages || 1);
+    } catch (erro) {
+      console.error("Erro ao carregar imóveis:", erro);
+    }
+  }, [paginaAtual]);
+
+  useEffect(() => {
+    setNomeUsuario(localStorage.getItem("@gesimo:nome") || "Usuário");
+    carregarImoveis();
+  }, [carregarImoveis]);
+
+  useEffect(() => {
+    localStorage.setItem("@gesimo:menuAberto", JSON.stringify(menuAberto));
+  }, [menuAberto]);
+
+  const botaoNovoImovel = (
+    <Button variant="primary" icon={Plus} onClick={() => setModalAberto(true)}>
+      Novo Imóvel
+    </Button>
+  );
+
+  return (
+    <div className="flex h-screen w-screen bg-slate-50 overflow-hidden font-sans">
+      <Sidebar
+        menuAberto={menuAberto}
+        setMenuAberto={setMenuAberto}
+        nome={nomeUsuario}
+      />
+
+      <div className="flex-1 flex flex-col overflow-y-auto">
+        <Header nome={nomeUsuario} />
+
+        <main className="p-8 max-w-7xl mx-auto w-full flex-1 flex flex-col">
+          <div className="mb-8 flex items-center gap-3">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-1 tracking-tight">
+                Imóveis
+              </h1>
+              <p className="text-gray-500 text-sm">
+                Catálogo de imóveis cadastrados
+              </p>
+            </div>
+          </div>
+
+          <DataTable
+            colunas={colunasDaTabela}
+            dados={imoveis}
+            paginaAtual={paginaAtual}
+            totalPaginas={totalPaginas}
+            onPageChange={(nova) => setPaginaAtual(nova)}
+            placeholderBusca="Buscar por endereço ou tipo..."
+            botaoAcao={botaoNovoImovel}
+            onSearch={(termo) => console.log("Buscando imóvel:", termo)}
+          />
+
+          <div className="flex-1"></div>
+          <Footer />
+        </main>
+      </div>
+
+      <ModalContainer
+        isOpen={modalAberto}
+        onClose={() => setModalAberto(false)}
+        title="Novo Imóvel"
+      >
+        <FormularioImovel
+          onClose={() => setModalAberto(false)}
+          onSuccess={carregarImoveis}
+        />
+      </ModalContainer>
+    </div>
+  );
+}

@@ -3,6 +3,10 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard'; 
 import Locadores from './pages/Locadores';
+import Locatarios from './pages/Locatarios';
+import Imoveis from './pages/Imoveis';
+import DetalhesImovel from './pages/Imoveis/detalhes';
+import Agendamentos from './pages/Agendamentos';
 
 export default function App() {
   return (
@@ -17,6 +21,16 @@ export default function App() {
         
         {/* <!-- Rota /locadores renderiza o Locadores --> */}
         <Route path="/locadores" element={<Locadores />} />
+
+        {/* <!-- Rota /locatarios renderiza o Locatários --> */}
+        <Route path="/locatarios" element={<Locatarios />} />
+
+        {/* <!-- Rota /imoveis renderiza o Imóveis --> */}
+        <Route path="/imoveis" element={<Imoveis />} />
+        <Route path="/imoveis/:id" element={<DetalhesImovel/>} />
+
+        {/* <!-- Rota /agendamentos renderiza o Agendamento --> */}
+        <Route path="/agendamentos" element={<Agendamentos />} />
       </Routes>
     </BrowserRouter>
   );

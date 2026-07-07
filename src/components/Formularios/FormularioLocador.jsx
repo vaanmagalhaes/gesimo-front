@@ -70,8 +70,17 @@ export default function FormularioLocador({ onClose, onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    
+    // 1. Busca o token usando o padrão do seu projeto
+    const token = localStorage.getItem("@gesimo:token");
+
     try {
-      await api.post("/locadores", formData);
+      // 2. Injeta o token no cabeçalho da requisição POST
+      await api.post("/locadores", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       onSuccess();
       onClose();
     } catch (error) {

@@ -1,28 +1,47 @@
-import React from 'react';
-import { LayoutDashboard, Users, LogOut, Menu } from 'lucide-react';
-import { useLocation, Link } from 'react-router-dom';
+import React from "react";
+import { LayoutDashboard, Users, LogOut, Menu, Home, Calendar } from "lucide-react";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 
 export default function Sidebar({ menuAberto, setMenuAberto, nome }) {
-
-  const location = useLocation(); 
+  const location = useLocation();
   const rotaAtual = location.pathname;
   
-  //Centralizei a lógica dos links de navegação em um array.
-  //Isso facilita adicionar novas rotas no futuro sem bagunçar o JSX.
+  // CORREÇÃO 1: Faltava inicializar o hook de navegação aqui!
+  const navigate = useNavigate(); 
+
+  const handleLogout = () => {
+    // 1. Limpa os dados do usuário do navegador
+    localStorage.removeItem("@gesimo:token");
+    localStorage.removeItem("@gesimo:nome");
+    
+    // 2. Redireciona para a tela de login
+    navigate("/"); 
+  };
+
   const navLinks = [
-    // ATENÇÃO: Verifique se a sua rota principal é '/dashboard' ou apenas '/'
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' }, 
-    { icon: Users, label: 'Locadores', path: '/locadores' },
-    // Adicionar mais links conforme o projeto crescer
+    { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+    { icon: Users, label: "Locadores", path: "/locadores" },
+    { icon: Users, label: "Locatários", path: "/locatarios" },
+    { icon: Home, label: "Imóveis", path: "/imoveis" },
+    { icon: Calendar, label: "Agenda", path: "/agendamentos"}
   ];
 
   return (
-    <aside className={`${menuAberto ? 'w-64' : 'w-20'} bg-[#111827] text-gray-300 transition-all duration-300 flex flex-col justify-between shrink-0`}>
+    <aside
+      className={`${menuAberto ? "w-64" : "w-20"} bg-[#111827] text-gray-300 transition-all duration-300 flex flex-col justify-between shrink-0`}
+    >
       <div>
         {/* Topo da Sidebar (Logo e Botão Toggle) */}
         <div className="p-4 flex items-center justify-between h-20 border-b border-gray-800">
-          {menuAberto && <span className="text-white font-bold text-2xl tracking-wide">GESIMO</span>}
-          <button onClick={() => setMenuAberto(!menuAberto)} className="p-2 hover:bg-gray-800 rounded-md transition-colors">
+          {menuAberto && (
+            <span className="text-white font-bold text-2xl tracking-wide">
+              GESIMO
+            </span>
+          )}
+          <button
+            onClick={() => setMenuAberto(!menuAberto)}
+            className="p-2 hover:bg-gray-800 rounded-md transition-colors"
+          >
             <Menu size={24} color="white" />
           </button>
         </div>
@@ -31,15 +50,13 @@ export default function Sidebar({ menuAberto, setMenuAberto, nome }) {
         <nav className="px-3 py-6 flex flex-col gap-2">
           {navLinks.map((link, index) => {
             const Icon = link.icon;
-            // AQUI ESTÁ A CORREÇÃO: Compara a rota real do navegador com o path do link
-            const isActive = rotaAtual === link.path; 
+            const isActive = rotaAtual === link.path;
 
             return (
-              // Substituímos a tag <a> pelo componente <Link> para navegação sem reload
-              <Link 
+              <Link
                 key={index}
-                to={link.path} 
-                className={`flex items-center gap-3 p-3 rounded-md transition-colors ${isActive ? 'bg-white text-[#111827] font-medium' : 'hover:bg-gray-800 text-gray-300'}`}
+                to={link.path}
+                className={`flex items-center gap-3 p-3 rounded-md transition-colors ${isActive ? "bg-white text-[#111827] font-medium" : "hover:bg-gray-800 text-gray-300"}`}
               >
                 <Icon size={20} />
                 {menuAberto && <span>{link.label}</span>}
@@ -49,10 +66,15 @@ export default function Sidebar({ menuAberto, setMenuAberto, nome }) {
         </nav>
       </div>
 
-      {/* Rodapé da Sidebar (Botão Sair) */}
-      <div className="p-4 border-t border-gray-800 hover:text-white cursor-pointer flex items-center gap-3 text-gray-300">
-        <LogOut size={20} />
-        {menuAberto && <span>Sair</span>}
+      {/* CORREÇÃO 2: Rodapé da Sidebar - Transformamos a div inteira em um botão de área ampla */}
+      <div className="p-4 border-t border-gray-800">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 p-2 hover:bg-red-50 text-gray-300 hover:text-red-600 rounded transition-colors"
+        >
+          <LogOut size={20} />
+          {menuAberto && <span className="font-medium">Sair</span>}
+        </button>
       </div>
     </aside>
   );

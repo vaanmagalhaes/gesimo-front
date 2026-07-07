@@ -35,8 +35,19 @@ export default function Locadores() {
 
   // 2. Usamos useCallback para que a função possa ser chamada de outros lugares
   const carregarLocadores = useCallback(async () => {
+    // Pegamos o token do localStorage
+    const token = localStorage.getItem("@gesimo:token");
+
+    console.log("TOKEN QUE ESTÁ INDO:", token)
+    
     try {
-      const resposta = await api.get(`/locadores?page=${paginaAtual}&limit=10`);
+      // INJETAMOS O TOKEN AQUI NO CABEÇALHO DA REQUISIÇÃO
+      const resposta = await api.get(`/locadores?page=${paginaAtual}&limit=10`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
       setLocadores(resposta.data.data || resposta.data);
       setTotalPaginas(resposta.data.meta?.totalPages || 1);
     } catch (erro) {

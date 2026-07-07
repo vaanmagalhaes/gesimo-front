@@ -37,8 +37,6 @@ export default function Locadores() {
   const carregarLocadores = useCallback(async () => {
     // Pegamos o token do localStorage
     const token = localStorage.getItem("@gesimo:token");
-
-    console.log("TOKEN QUE ESTÁ INDO:", token)
     
     try {
       // INJETAMOS O TOKEN AQUI NO CABEÇALHO DA REQUISIÇÃO

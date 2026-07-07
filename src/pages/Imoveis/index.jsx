@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
-import { Plus, Home, Eye, Edit2, FileText, Trash2 } from "lucide-react"; 
+import { Plus, Eye, Edit2, FileText, Trash2 } from "lucide-react"; 
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -9,12 +9,11 @@ import Button from "../../components/Button";
 import DataTable from "../../components/DataTable";
 import ModalContainer from "../../components/ModalContainer";
 import FormularioImovel from "../../components/Formularios/FormularioImovel";
+import FormularioEdicaoImovel from "../../components/Formularios/FormularioEdicaoImovel";
 import MenuAcoes from "../../components/MenuAcoes";
-import DetalhesImovel from '../Imoveis/detalhes';
 import { api } from "../../services/api";
 
 export default function Imoveis() {
-
   const navigate = useNavigate();
 
   const [menuAberto, setMenuAberto] = useState(() => {
@@ -27,8 +26,8 @@ export default function Imoveis() {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [modalAberto, setModalAberto] = useState(false);
+  const [imovelEdicao, setImovelEdicao] = useState(null);
 
-  // Colunas espelhadas EXATAMENTE como no protótipo image_fb251e.jpg
   const colunasDaTabela = [
     { key: "imovelExibicao", label: "Imóvel" },
     { key: "tipoExibicao", label: "Tipo" },
@@ -38,43 +37,6 @@ export default function Imoveis() {
     { key: "acoes", label: "Ações" },
   ];
 
-  // Função para criar as tags coloridas de status baseadas no Prisma
-  const renderizarBadgeStatus = (status) => {
-    switch (status) {
-      case "DISPONIVEL":
-        return (
-          <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium border border-blue-200">
-            Disponível
-          </span>
-        );
-      case "ALUGADO":
-        return (
-          <span className="px-3 py-1 bg-emerald-100 text-emerald-600 rounded-full text-xs font-medium border border-emerald-200">
-            Alugado
-          </span>
-        );
-      case "VENDIDO":
-        return (
-          <span className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium border border-gray-200">
-            Vendido
-          </span>
-        );
-      case "INATIVO":
-        return (
-          <span className="px-3 py-1 bg-red-100 text-red-600 rounded-full text-xs font-medium border border-red-200">
-            Inativo
-          </span>
-        );
-      default: // Para status personalizados que o PO possa pedir depois (ex: Em Negociação)
-        return (
-          <span className="px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-medium border border-orange-200">
-            Em Negociação
-          </span>
-        );
-    }
-  };
-
-  // Função para capitalizar palavras (ex: APARTAMENTO -> Apartamento)
   const formatarPalavra = (palavra) => {
     if (!palavra) return "";
     return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
@@ -90,7 +52,6 @@ export default function Imoveis() {
 
       const dadosBrutos = resposta.data.data || resposta.data;
 
-      // Formatando os dados para a interface limpa
       const imoveisFormatados = dadosBrutos.map((imovel) => {
         const bairro = imovel.endereco?.bairro || "";
         const rua = imovel.endereco?.rua || "";
@@ -102,7 +63,7 @@ export default function Imoveis() {
           imovelExibicao: `${tipoFormatado} ${bairro}`,
           tipoExibicao: tipoFormatado,
           enderecoExibicao: `${rua}, ${numero}`,
-          valorExibicao: "R$ 3.500,00",
+          valorExibicao: `R$ ${imovel.valorEstimado || "0,00"}`,
 
           statusBadge: (
             <Badge variant={imovel.status}>
@@ -110,12 +71,11 @@ export default function Imoveis() {
             </Badge>
           ),
 
-          // 👇 AÇÕES DINÂMICAS INJETADAS NA TABELA 👇
           acoes: (
             <div className="flex justify-end">
               <MenuAcoes 
                 opcoes={[
- { 
+                  { 
                     label: 'Visualizar imóvel', 
                     icon: Eye, 
                     onClick: () => navigate(`/imoveis/${imovel.id}`) 
@@ -123,7 +83,10 @@ export default function Imoveis() {
                   { 
                     label: 'Editar', 
                     icon: Edit2, 
-                    onClick: () => console.log(`Editar imóvel ${imovel.id}`) 
+                    onClick: () => {
+                        setImovelEdicao(imovel); // Define o imóvel que será editado
+                        setModalAberto(true);    // Abre o modal
+                    }
                   },
                   { 
                     label: 'Ver contratos', 
@@ -133,7 +96,7 @@ export default function Imoveis() {
                   { 
                     label: 'Deletar imóvel', 
                     icon: Trash2, 
-                    danger: true, // Texto em vermelho
+                    danger: true,
                     onClick: () => console.log(`Soft delete no imóvel ${imovel.id}`) 
                   },
                 ]} 
@@ -148,7 +111,7 @@ export default function Imoveis() {
     } catch (erro) {
       console.error("Erro ao carregar imóveis:", erro);
     }
-  }, [paginaAtual]);
+  }, [paginaAtual, navigate]);
 
   useEffect(() => {
     setNomeUsuario(localStorage.getItem("@gesimo:nome") || "Usuário");
@@ -160,33 +123,21 @@ export default function Imoveis() {
   }, [menuAberto]);
 
   const botaoNovoImovel = (
-    <Button variant="primary" icon={Plus} onClick={() => setModalAberto(true)}>
+    <Button variant="primary" icon={Plus} onClick={() => { setImovelEdicao(null); setModalAberto(true); }}>
       Novo Imóvel
     </Button>
   );
 
   return (
     <div className="flex h-screen w-screen bg-slate-50 overflow-hidden font-sans">
-      <Sidebar
-        menuAberto={menuAberto}
-        setMenuAberto={setMenuAberto}
-        nome={nomeUsuario}
-      />
+      <Sidebar menuAberto={menuAberto} setMenuAberto={setMenuAberto} nome={nomeUsuario} />
 
       <div className="flex-1 flex flex-col overflow-y-auto">
         <Header nome={nomeUsuario} />
 
         <main className="p-8 max-w-7xl mx-auto w-full flex-1 flex flex-col">
-          <div className="mb-8 flex items-center gap-3">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-1 tracking-tight">
-                Imóveis
-              </h1>
-              <p className="text-gray-500 text-sm">
-                Catálogo de imóveis cadastrados
-              </p>
-            </div>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">Imóveis</h1>
+          <p className="text-gray-500 text-sm mb-8">Catálogo de imóveis cadastrados</p>
 
           <DataTable
             colunas={colunasDaTabela}
@@ -196,23 +147,28 @@ export default function Imoveis() {
             onPageChange={(nova) => setPaginaAtual(nova)}
             placeholderBusca="Buscar por endereço ou tipo..."
             botaoAcao={botaoNovoImovel}
-            onSearch={(termo) => console.log("Buscando imóvel:", termo)}
           />
-
-          <div className="flex-1"></div>
           <Footer />
         </main>
       </div>
 
       <ModalContainer
         isOpen={modalAberto}
-        onClose={() => setModalAberto(false)}
-        title="Novo Imóvel"
+        onClose={() => { setModalAberto(false); setImovelEdicao(null); }}
+        title={imovelEdicao ? "Editar Imóvel" : "Novo Imóvel"}
       >
-        <FormularioImovel
-          onClose={() => setModalAberto(false)}
-          onSuccess={carregarImoveis}
-        />
+        {imovelEdicao ? (
+            <FormularioEdicaoImovel 
+                imovel={imovelEdicao} 
+                onClose={() => { setModalAberto(false); setImovelEdicao(null); }} 
+                onSuccess={() => { carregarImoveis(); setModalAberto(false); }}
+            />
+        ) : (
+            <FormularioImovel 
+                onClose={() => setModalAberto(false)} 
+                onSuccess={carregarImoveis} 
+            />
+        )}
       </ModalContainer>
     </div>
   );

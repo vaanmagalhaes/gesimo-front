@@ -5,9 +5,9 @@ import Footer from '../../components/Footer';
 
 // Importações do Recharts para o Gráfico
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-// Importações dos ícones restantes (Home, UserCheck, etc.)
+// Importações dos ícones
 import { Home, UserCheck, Calendar, Users } from 'lucide-react';
-// Importe a sua configuração da API (Ajuste o caminho se necessário)
+// Configuração da API
 import { api } from '../../services/api';
 
 export default function Dashboard() {
@@ -20,35 +20,54 @@ export default function Dashboard() {
 
   const [nome, setNome] = useState('');
   
-  // Estado inicial estruturado para não quebrar a tela antes do Back-end responder
+  // Estado inicial estruturado
   const [dados, setDados] = useState({
     imoveis: 0, locadores: 0, locatarios: 0, compromissos: 0,
     grafico: [],
-    contratos: [], // Adicionamos o estado para os contratos
-    agenda: [] // NOVO: Adicionamos o estado para a agenda
+    contratos: [], 
+    agenda: [] 
   });
 
   // --- EFEITOS ---
   useEffect(() => {
     setNome(localStorage.getItem('@gesimo:nome') || 'Usuário');
     
-    // Conexão real com o BFF (Gateway)
     const carregarDadosDoBanco = async () => {
       try {
-        const resposta = await api.get('/dashboard/resumo');
-        console.log("Dados recebidos da API:", resposta.data);
+        const token = localStorage.getItem('@gesimo:token');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
 
+        // 1. Busca as contagens reais dos 4 microsserviços simultaneamente
+        // O .catch individual garante que se uma rota falhar, as outras continuam funcionando
+        const [resImoveis, resLocadores, resLocatarios, resCompromissos] = await Promise.all([
+          api.get('/imoveis', config).catch(() => ({ data: [] })),
+          api.get('/locadores', config).catch(() => ({ data: [] })),
+          api.get('/locatarios', config).catch(() => ({ data: [] })),
+          api.get('/compromissos', config).catch(() => ({ data: [] }))
+        ]);
+
+        // 2. Tenta buscar os dados visuais (Gráfico e Agenda) se a rota existir
+        let dadosVisuais = { grafico: [], contratos: [], agenda: [] };
+        try {
+          const resumo = await api.get('/dashboard/resumo', config);
+          dadosVisuais = resumo.data;
+        } catch (erroResumo) {
+          console.warn("Rota /dashboard/resumo não encontrada. Os gráficos ficarão vazios por enquanto.");
+        }
+
+        // 3. Atualiza o estado da tela mesclando as contagens reais com os dados visuais
         setDados({
-          imoveis: resposta.data.imoveis || 0,
-          locadores: resposta.data.locadores || 0,
-          locatarios: resposta.data.locatarios || 0,
-          compromissos: resposta.data.compromissos || 0,
-          grafico: resposta.data.grafico || [],
-          contratos: resposta.data.contratos || [], // Recebe as cores e valores do backend
-          agenda: resposta.data.agenda || [] // NOVO: Recebe a agenda formatada do backend
+          imoveis: resImoveis.data.data?.length || resImoveis.data?.length || 0,
+          locadores: resLocadores.data.data?.length || resLocadores.data?.length || 0,
+          locatarios: resLocatarios.data.data?.length || resLocatarios.data?.length || 0,
+          compromissos: resCompromissos.data.data?.length || resCompromissos.data?.length || 0,
+          grafico: dadosVisuais.grafico || [],
+          contratos: dadosVisuais.contratos || [],
+          agenda: dadosVisuais.agenda || [] 
         });
+
       } catch (erro) {
-        console.error("Erro ao buscar dados reais do dashboard:", erro);
+        console.error("Erro geral ao buscar dados do dashboard:", erro);
       }
     };
 
@@ -77,7 +96,7 @@ export default function Dashboard() {
             <p className="text-gray-500">Aqui está um resumo da sua carteira hoje.</p>
           </div>
 
-          {/* CARDS DE KPI */}
+          {/* CARDS DE KPI (Agora conectados ao banco) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
             {[ { title: "Imóveis", val: dados.imoveis, icon: Home }, { title: "Locadores", val: dados.locadores, icon: Users }, 
                { title: "Locatários", val: dados.locatarios, icon: UserCheck }, { title: "Compromissos", val: dados.compromissos, icon: Calendar } 
@@ -98,7 +117,7 @@ export default function Dashboard() {
           {/* SESSÃO CENTRAL: Grid com Contratos e Gráfico Lado a Lado */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             
-            {/* NOVO: CARD DE CONTRATOS POR VENCIMENTO */}
+            {/* CARD DE CONTRATOS POR VENCIMENTO */}
             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between">
               <h2 className="text-lg font-bold text-gray-900 mb-6">Contratos por Vencimento</h2>
               
@@ -106,14 +125,12 @@ export default function Dashboard() {
                 {dados.contratos?.map((item, index) => (
                   <div key={index} className="flex items-center justify-between border-b border-gray-50 pb-4 last:border-0 last:pb-0">
                     <span className="text-sm text-gray-600 font-medium">{item.label}</span>
-                    {/* A cor dinâmica calculada pelo back-end é aplicada aqui */}
                     <span className={`text-sm font-bold ${item.color}`}>{item.value}</span>
                   </div>
                 ))}
 
-                {/* Caso não tenha contratos, exibe um feedback com proteção de tela branca */}
                 {(!dados.contratos || dados.contratos.length === 0) && (
-                  <p className="text-sm text-gray-400 text-center py-4">Nenhum dado encontrado.</p>
+                  <p className="text-sm text-gray-400 text-center py-4">Nenhum dado de contrato encontrado.</p>
                 )}
               </div>
             </div>
@@ -152,7 +169,7 @@ export default function Dashboard() {
 
           </div>
 
-          {/* ÉPICO 5: AGENDA DE HOJE */}
+          {/* AGENDA DE HOJE */}
           <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm mb-8">
             <h2 className="text-lg font-bold text-gray-900 mb-6">Agenda de Hoje</h2>
             
@@ -181,7 +198,6 @@ export default function Dashboard() {
                 </div>
               ))}
 
-              {/* Proteção caso a agenda esteja vazia */}
               {(!dados.agenda || dados.agenda.length === 0) && (
                 <p className="text-sm text-gray-400 py-6 text-center">Você não tem compromissos agendados para hoje.</p>
               )}

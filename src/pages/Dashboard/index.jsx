@@ -46,13 +46,25 @@ export default function Dashboard() {
     // Conexão real com o BFF (Gateway)
     const carregarDadosDoBanco = async () => {
       try {
-        const resposta = await api.get('/dashboard/resumo');
-        console.log("Dados recebidos da API:", resposta.data);
+        const token = localStorage.getItem('@gesimo:token');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        
+        let resImoveis, resLocadores, resLocatarios;
+        try { resImoveis = await api.get('/imoveis', config); } catch (e) { console.error(e); }
+        try { resLocadores = await api.get('/locadores', config); } catch (e) { console.error(e); }
+        try { resLocatarios = await api.get('/locatarios', config); } catch (e) { console.error(e); }
+
+        let imoveisTotal = resImoveis ? (resImoveis.data.data || resImoveis.data || []).length : undefined;
+        let locadoresTotal = resLocadores ? (resLocadores.data.data || resLocadores.data || []).length : undefined;
+        let locatariosTotal = resLocatarios ? (resLocatarios.data.data || resLocatarios.data || []).length : undefined;
+
+        let resposta = { data: {} };
+        try { resposta = await api.get('/dashboard/resumo'); } catch (e) { console.error(e); }
 
         setDados({
-          imoveis: resposta.data.imoveis || 0,
-          locadores: resposta.data.locadores || 0,
-          locatarios: resposta.data.locatarios || 0,
+          imoveis: imoveisTotal !== undefined ? imoveisTotal : (resposta.data.imoveis || 0),
+          locadores: locadoresTotal !== undefined ? locadoresTotal : (resposta.data.locadores || 0),
+          locatarios: locatariosTotal !== undefined ? locatariosTotal : (resposta.data.locatarios || 0),
           compromissos: resposta.data.compromissos || 0,
           grafico: resposta.data.grafico || [],
           contratos: resposta.data.contratos || [], // Recebe as cores e valores do backend

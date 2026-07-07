@@ -8,6 +8,7 @@ import Locatarios from './pages/Locatarios';
 import Imoveis from './pages/Imoveis';
 import DetalhesImovel from './pages/Imoveis/detalhes';
 import Agendamentos from './pages/Agendamentos';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
   return (
@@ -21,20 +22,20 @@ export default function App() {
         <Route path="/cadastro" element={<Cadastro />} />
         
         {/* <!-- Rota /dashboard renderiza o Dashboard --> */}
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         
         {/* <!-- Rota /locadores renderiza o Locadores --> */}
-        <Route path="/locadores" element={<Locadores />} />
+        <Route path="/locadores" element={<ProtectedRoute><Locadores /></ProtectedRoute>} />
 
         {/* <!-- Rota /locatarios renderiza o Locatários --> */}
-        <Route path="/locatarios" element={<Locatarios />} />
+        <Route path="/locatarios" element={<ProtectedRoute><Locatarios /></ProtectedRoute>} />
 
         {/* <!-- Rota /imoveis renderiza o Imóveis --> */}
-        <Route path="/imoveis" element={<Imoveis />} />
-        <Route path="/imoveis/:id" element={<DetalhesImovel/>} />
+        <Route path="/imoveis" element={<ProtectedRoute><Imoveis /></ProtectedRoute>} />
+        <Route path="/imoveis/:id" element={<ProtectedRoute><DetalhesImovel/></ProtectedRoute>} />
 
         {/* <!-- Rota /agendamentos renderiza o Agendamento --> */}
-        <Route path="/agendamentos" element={<Agendamentos />} />
+        <Route path="/agendamentos" element={<ProtectedRoute><Agendamentos /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

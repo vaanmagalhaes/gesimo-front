@@ -9,6 +9,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Home, UserCheck, Calendar, Users } from 'lucide-react';
 // Importe a sua configuração da API (Ajuste o caminho se necessário)
 import { api } from '../../services/api';
+import { parseJwt } from '../../utils/auth';
 
 export default function Dashboard() {
   
@@ -19,6 +20,7 @@ export default function Dashboard() {
   });
 
   const [nome, setNome] = useState('');
+  const [ehAdmin, setEhAdmin] = useState(false);
   
   // Estado inicial estruturado para não quebrar a tela antes do Back-end responder
   const [dados, setDados] = useState({
@@ -30,7 +32,16 @@ export default function Dashboard() {
 
   // --- EFEITOS ---
   useEffect(() => {
-    setNome(localStorage.getItem('@gesimo:nome') || 'Usuário');
+    const nomeSalvo = localStorage.getItem('@gesimo:nome') || 'Usuário';
+    setNome(nomeSalvo);
+
+    const token = localStorage.getItem('@gesimo:token');
+    if (token) {
+      const decoded = parseJwt(token);
+      if (decoded && (decoded.role === 'ADMIN' || decoded.id_role === 1)) {
+        setEhAdmin(true);
+      }
+    }
     
     // Conexão real com o BFF (Gateway)
     const carregarDadosDoBanco = async () => {
@@ -73,7 +84,7 @@ export default function Dashboard() {
           
           {/* Saudação Dinâmica */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-1 tracking-tight">Olá, {nome.split(' ')[0]}.</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-1 tracking-tight">Olá, {nome.split(' ')[0]}{ehAdmin ? ' (ADMIN)' : ''}.</h1>
             <p className="text-gray-500">Aqui está um resumo da sua carteira hoje.</p>
           </div>
 

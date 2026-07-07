@@ -1,6 +1,6 @@
 // src/pages/Login/index.jsx
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom"; // Ferramenta para mudar de página
+import { useNavigate, Link, useLocation } from "react-router-dom"; // Ferramenta para mudar de página
 import { Eye, EyeOff } from "lucide-react"; // Ícones minimalistas para a senha
 import { api } from "../../services/api";
 import estilos from "./Login.module.css";
@@ -8,11 +8,12 @@ import logo from "../../assets/logo.png";
 
 export default function Login() {
   const navegar = useNavigate();
+  const location = useLocation();
 
   // Estados do formulário
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [erro, setErro] = useState("");
+  const [erro, setErro] = useState(location.state?.mensagem || "");
   const [carregando, setCarregando] = useState(false);
 
   // Estado para controlar se a senha está visível ou oculta

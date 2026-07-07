@@ -42,9 +42,11 @@ export default function Login() {
         localStorage.setItem("@gesimo:token", token);
 
         // NOVO: Tentamos pegar o nome do usuário do payload do backend. 
-        // Adapte "resposta.data.user.name" conforme o formato que o Eduardo enviou no console.log
-        const nomeUsuario = resposta.data.user?.nome || resposta.data.nome || 'Administrador';
+        const nomeUsuario = resposta.data.user?.nome || resposta.data.nome || 'Usuário';
+        const roleUsuario = resposta.data.user?.role || resposta.data.role || 'USER';
+        
         localStorage.setItem('@gesimo:nome', nomeUsuario);
+        localStorage.setItem('@gesimo:role', roleUsuario);
 
         // Autoriza e redireciona para o Dashboard
         navegar("/dashboard");

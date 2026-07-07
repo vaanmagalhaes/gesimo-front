@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Plus, Users } from "lucide-react"; // Usando 'Users' para representar locatários
+import { useNavigate } from "react-router-dom";
+import { Plus, Users, Eye, Edit, Trash2, AlertTriangle } from "lucide-react"; // Usando 'Users' para representar locatários
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -7,6 +8,7 @@ import Button from "../../components/Button";
 import DataTable from "../../components/DataTable";
 import ModalContainer from "../../components/ModalContainer";
 import FormularioLocatario from "../../components/Formularios/FormularioLocatario";
+import MenuAcoes from "../../components/MenuAcoes";
 
 import { api } from "../../services/api";
 
@@ -21,6 +23,38 @@ export default function Locatarios() {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [modalAberto, setModalAberto] = useState(false);
+  const navigate = useNavigate();
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Deseja realmente inativar este locatário? (Soft Delete)")) {
+      try {
+        const token = localStorage.getItem("@gesimo:token");
+        await api.delete(`/locatarios/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        carregarLocatarios();
+      } catch (erro) {
+        console.error("Erro ao inativar locatário:", erro);
+        alert("Erro ao inativar locatário");
+      }
+    }
+  };
+
+  const handleHardDelete = async (id) => {
+    if (window.confirm("ATENÇÃO: Deseja apagar este locatário PERMANENTEMENTE? (Hard Delete)")) {
+      try {
+        const token = localStorage.getItem("@gesimo:token");
+        await api.delete(`/locatarios/${id}/hard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        carregarLocatarios();
+      } catch (erro) {
+        console.error("Erro ao apagar locatário permanentemente:", erro);
+        alert("Erro ao apagar locatário permanentemente");
+      }
+    }
+  };
+
 
   // Colunas espelhando perfeitamente o design do mockup image_eed73b.jpg
   const colunasDaTabela = [
@@ -43,6 +77,7 @@ export default function Locatarios() {
       });
 
       const dadosBrutos = resposta.data.data || resposta.data;
+      const isAdmin = localStorage.getItem("@gesimo:role") === "ADMIN";
 
       // Normalizando os dados do Prisma para a exibição limpa na tabela
       const locatariosFormatados = dadosBrutos.map((loc) => {
@@ -52,6 +87,16 @@ export default function Locatarios() {
           nomeExibicao: isPF ? loc.pessoaFisica.nome : loc.pessoaJuridica?.razaoSocial || "N/A",
           documentoExibicao: isPF ? loc.pessoaFisica.cpf : loc.pessoaJuridica?.cnpj || "N/A",
           contratos: loc.contratosCount, 
+          acoes: (
+            <MenuAcoes
+              opcoes={[
+                { label: "Visualizar", icon: Eye, onClick: () => navigate(`/locatarios/${loc.id}`) },
+                { label: "Editar", icon: Edit, onClick: () => navigate(`/locatarios/${loc.id}?edit=true`) },
+                { label: "Apagar", icon: Trash2, danger: true, onClick: () => handleDelete(loc.id) },
+                ...(isAdmin ? [{ label: "Hard Delete", icon: AlertTriangle, danger: true, onClick: () => handleHardDelete(loc.id) }] : [])
+              ]}
+            />
+          )
         };
       });
 

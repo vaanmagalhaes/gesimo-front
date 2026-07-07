@@ -1,6 +1,7 @@
 // src/pages/Locadores/index.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import { Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Eye, Edit, Trash2, AlertTriangle } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -8,6 +9,7 @@ import Button from "../../components/Button";
 import DataTable from "../../components/DataTable";
 import ModalContainer from "../../components/ModalContainer"; // Importe o container
 import FormularioLocador from "../../components/Formularios/FormularioLocador"; // Importe o formulário
+import MenuAcoes from "../../components/MenuAcoes";
 import { api } from "../../services/api";
 
 export default function Locadores() {
@@ -20,9 +22,25 @@ export default function Locadores() {
   const [locadores, setLocadores] = useState([]);
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
+  const navigate = useNavigate();
   
   // 1. Estado para controlar o modal
   const [modalAberto, setModalAberto] = useState(false);
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Deseja realmente apagar este locador?")) {
+      try {
+        const token = localStorage.getItem("@gesimo:token");
+        await api.delete(`/locadores/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        carregarLocadores();
+      } catch (erro) {
+        console.error("Erro ao apagar locador:", erro);
+        alert("Erro ao apagar locador");
+      }
+    }
+  };
 
   const colunasDaTabela = [
     { key: "nome", label: "Nome" },
@@ -48,7 +66,24 @@ export default function Locadores() {
         }
       });
 
-      setLocadores(resposta.data.data || resposta.data);
+      const rawData = resposta.data.data || resposta.data;
+      const isAdmin = localStorage.getItem("@gesimo:role") === "ADMIN";
+
+      const locadoresComAcoes = rawData.map(locador => ({
+        ...locador,
+        acoes: (
+          <MenuAcoes
+            opcoes={[
+              { label: "Visualizar", icon: Eye, onClick: () => navigate(`/locadores/${locador.id}`) },
+              { label: "Editar", icon: Edit, onClick: () => navigate(`/locadores/${locador.id}?edit=true`) },
+              { label: "Apagar", icon: Trash2, danger: true, onClick: () => handleDelete(locador.id) },
+              ...(isAdmin ? [{ label: "Hard Delete (Em breve)", icon: AlertTriangle, danger: true, onClick: () => alert("Ainda não implementado. Rota de Hard Delete não disponível no backend para Locadores.") }] : [])
+            ]}
+          />
+        )
+      }));
+
+      setLocadores(locadoresComAcoes);
       setTotalPaginas(resposta.data.meta?.totalPages || 1);
     } catch (erro) {
       console.error("Erro ao carregar locadores:", erro);

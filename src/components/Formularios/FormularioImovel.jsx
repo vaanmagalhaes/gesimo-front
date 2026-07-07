@@ -55,7 +55,7 @@ const SelectGroup = ({ label, name, required, value, onChange, options }) => (
   </div>
 );
 
-export default function FormularioImovel({ onClose, onSuccess }) {
+export default function FormularioImovel({ onClose, onSuccess, initialData }) {
   const [loading, setLoading] = useState(false);
   const [enderecoBloqueado, setEnderecoBloqueado] = useState(false);
 
@@ -81,6 +81,33 @@ export default function FormularioImovel({ onClose, onSuccess }) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  React.useEffect(() => {
+    if (initialData) {
+      let rua = initialData.endereco?.rua || "";
+      let complemento = "";
+      if (rua.includes(" - ")) {
+        const parts = rua.split(" - ");
+        complemento = parts.pop();
+        rua = parts.join(" - ");
+      }
+      setFormData({
+        inscricaoIPTU: initialData.inscricaoIPTU || "",
+        inscricaoBombeiro: initialData.inscricaoBombeiro || "",
+        metragem: initialData.metragem || "",
+        classificacao: initialData.classificacao || "",
+        tipologia: initialData.tipologia || "",
+        status: initialData.status || "DISPONIVEL",
+        cep: initialData.endereco?.cep || "",
+        rua: rua,
+        numero: initialData.endereco?.numero !== "S/N" ? initialData.endereco?.numero : "",
+        complemento: complemento,
+        bairro: initialData.endereco?.bairro || "",
+        cidade: initialData.endereco?.cidade || "",
+        estado: initialData.endereco?.estado || "",
+      });
+    }
+  }, [initialData]);
 
   const buscarCep = async (cep) => {
     const cepLimpo = cep.replace(/\D/g, "");
@@ -149,9 +176,15 @@ export default function FormularioImovel({ onClose, onSuccess }) {
       };
 
       const token = localStorage.getItem("@gesimo:token");
-      await api.post("/imoveis", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (initialData && initialData.id) {
+        await api.patch(`/imoveis/${initialData.id}`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await api.post("/imoveis", payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
 
       onSuccess();
       onClose();

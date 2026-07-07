@@ -1,9 +1,9 @@
 // src/components/Formularios/FormularioLocador.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../Button";
 import { api } from "../../services/api";
 
-export default function FormularioLocador({ onClose, onSuccess }) {
+export default function FormularioLocador({ onClose, onSuccess, initialData }) {
   const [formData, setFormData] = useState({
     nome: "",
     cpf: "",
@@ -21,6 +21,20 @@ export default function FormularioLocador({ onClose, onSuccess }) {
 
   const [loading, setLoading] = useState(false);
   const [enderecoBloqueado, setEnderecoBloqueado] = useState(false);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        nome: initialData.nome || initialData.pessoaFisica?.nome || "",
+        cpf: initialData.cpf || initialData.pessoaFisica?.cpf || "",
+        email: initialData.email || "",
+        endereco: initialData.endereco || {
+          cep: "", logradouro: "", numero: "", complemento: "", bairro: "", cidade: "", estado: ""
+        }
+      });
+      if (initialData.endereco?.logradouro) setEnderecoBloqueado(true);
+    }
+  }, [initialData]);
 
   const buscarCep = async (cep) => {
     const cepLimpo = cep.replace(/\D/g, "");
@@ -75,12 +89,15 @@ export default function FormularioLocador({ onClose, onSuccess }) {
     const token = localStorage.getItem("@gesimo:token");
 
     try {
-      // 2. Injeta o token no cabeçalho da requisição POST
-      await api.post("/locadores", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      if (initialData && initialData.id) {
+        await api.patch(`/locadores/${initialData.id}`, formData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } else {
+        await api.post("/locadores", formData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      }
       onSuccess();
       onClose();
     } catch (error) {

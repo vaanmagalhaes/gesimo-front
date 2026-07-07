@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Download, MoreHorizontal, UploadCloud, FileText, Edit, MapPin, ArrowLeft } from 'lucide-react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { Download, MoreHorizontal, UploadCloud, FileText, Edit, MapPin, ArrowLeft, Trash2 } from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
 import Header from '../../components/Header';
 import Badge from '../../components/Badge';
 import Button from '../../components/Button';
+import ModalContainer from '../../components/ModalContainer';
+import FormularioImovel from '../../components/Formularios/FormularioImovel';
 import { api } from '../../services/api';
 
 export default function DetalhesImovel() {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+  const location = useLocation();
+  const isEditInit = new URLSearchParams(location.search).get('edit') === 'true';
+
   const [imovel, setImovel] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [abaAtiva, setAbaAtiva] = useState('contratos');
+  const [modalEdicaoAberto, setModalEdicaoAberto] = useState(isEditInit);
 
   const [nomeUsuario, setNomeUsuario] = useState("");
   const [menuAberto, setMenuAberto] = useState(() => {
@@ -35,23 +40,38 @@ export default function DetalhesImovel() {
     localStorage.setItem("@gesimo:menuAberto", JSON.stringify(menuAberto));
   }, [menuAberto]);
 
-  useEffect(() => {
-    const carregarDetalhes = async () => {
-      try {
-        const token = localStorage.getItem("@gesimo:token");
-        const resposta = await api.get(`/imoveis/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setImovel(resposta.data.data || resposta.data);
-      } catch (erro) {
-        console.error("Erro ao carregar detalhes do imóvel:", erro);
-      } finally {
-        setCarregando(false);
-      }
-    };
+  const carregarDetalhes = async () => {
+    try {
+      const token = localStorage.getItem("@gesimo:token");
+      const resposta = await api.get(`/imoveis/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setImovel(resposta.data.data || resposta.data);
+    } catch (erro) {
+      console.error("Erro ao carregar detalhes do imóvel:", erro);
+    } finally {
+      setCarregando(false);
+    }
+  };
 
+  useEffect(() => {
     if (id) carregarDetalhes();
   }, [id]);
+
+  const handleDelete = async () => {
+    if (window.confirm("Deseja realmente apagar este imóvel?")) {
+      try {
+        const token = localStorage.getItem("@gesimo:token");
+        await api.delete(`/imoveis/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        navigate('/imoveis');
+      } catch (erro) {
+        console.error("Erro ao apagar imóvel:", erro);
+        alert("Erro ao apagar imóvel");
+      }
+    }
+  };
 
   const formatarPalavra = (palavra) => {
     if (!palavra) return "";
@@ -115,10 +135,8 @@ export default function DetalhesImovel() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <Button variant="secondary" icon={Edit} onClick={() => setModalEdicaoAberto(true)}>
-  Editar
-</Button>
-                <Button variant="secondary">Mais ações</Button>
+                <Button variant="secondary" icon={Edit} onClick={() => setModalEdicaoAberto(true)}>Editar</Button>
+                <Button variant="primary" icon={Trash2} onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white border-none">Apagar</Button>
               </div>
             </div>
 
@@ -219,6 +237,10 @@ export default function DetalhesImovel() {
           )}
         </main>
       </div>
+
+      <ModalContainer isOpen={modalEdicaoAberto} onClose={() => setModalEdicaoAberto(false)} title="Editar Imóvel">
+        <FormularioImovel initialData={imovel} onClose={() => setModalEdicaoAberto(false)} onSuccess={carregarDetalhes} />
+      </ModalContainer>
     </div>
   );
 }

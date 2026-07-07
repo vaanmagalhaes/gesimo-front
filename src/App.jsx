@@ -5,8 +5,10 @@ import Cadastro from './pages/Cadastro';
 import Dashboard from './pages/Dashboard'; 
 import Locadores from './pages/Locadores';
 import Locatarios from './pages/Locatarios';
+import DetalhesLocatario from './pages/Locatarios/detalhes';
 import Imoveis from './pages/Imoveis';
 import DetalhesImovel from './pages/Imoveis/detalhes';
+import DetalhesLocador from './pages/Locadores/detalhes';
 import Agendamentos from './pages/Agendamentos';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -26,9 +28,11 @@ export default function App() {
         
         {/* <!-- Rota /locadores renderiza o Locadores --> */}
         <Route path="/locadores" element={<ProtectedRoute><Locadores /></ProtectedRoute>} />
+        <Route path="/locadores/:id" element={<ProtectedRoute><DetalhesLocador/></ProtectedRoute>} />
 
         {/* <!-- Rota /locatarios renderiza o Locatários --> */}
         <Route path="/locatarios" element={<ProtectedRoute><Locatarios /></ProtectedRoute>} />
+        <Route path="/locatarios/:id" element={<ProtectedRoute><DetalhesLocatario/></ProtectedRoute>} />
 
         {/* <!-- Rota /imoveis renderiza o Imóveis --> */}
         <Route path="/imoveis" element={<ProtectedRoute><Imoveis /></ProtectedRoute>} />

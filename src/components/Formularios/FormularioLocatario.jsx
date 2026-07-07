@@ -30,7 +30,7 @@ const InputGroup = ({
   </div>
 );
 
-export default function FormularioLocatario({ onClose, onSuccess }) {
+export default function FormularioLocatario({ onClose, onSuccess, initialData }) {
   const [tipoPessoa, setTipoPessoa] = useState("FISICA");
   const [loading, setLoading] = useState(false);
   const [enderecoBloqueado, setEnderecoBloqueado] = useState(false); // Controla o bloqueio
@@ -61,6 +61,40 @@ export default function FormularioLocatario({ onClose, onSuccess }) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  React.useEffect(() => {
+    if (initialData) {
+      setTipoPessoa(initialData.pessoaFisica ? "FISICA" : "JURIDICA");
+      
+      const cepMatch = initialData.endereco?.match(/CEP:\s*([\d-]+)/);
+      const cep = cepMatch ? cepMatch[1] : "";
+      
+      setFormData({
+        email: initialData.email || "",
+        telefone: initialData.telefone || "",
+        cep: cep,
+        logradouro: "", 
+        numero: "",
+        complemento: "",
+        bairro: "",
+        cidade: "",
+        uf: "",
+        nome: initialData.pessoaFisica?.nome || "",
+        cpf: initialData.pessoaFisica?.cpf || "",
+        rg: initialData.pessoaFisica?.rg || "",
+        estadoCivil: initialData.pessoaFisica?.estadoCivil || "",
+        profissaoRamo: initialData.pessoaFisica?.profissaoRamo || "",
+        razaoSocial: initialData.pessoaJuridica?.razaoSocial || "",
+        cnpj: initialData.pessoaJuridica?.cnpj || "",
+        inscricaoEstadual: initialData.pessoaJuridica?.inscricaoEstadual || "",
+        observacoes: initialData.observacoes || "",
+      });
+
+      if (cep) {
+        buscarCep(cep);
+      }
+    }
+  }, [initialData]);
 
   const buscarCep = async (cep) => {
     const cepLimpo = cep.replace(/\D/g, "");
@@ -131,9 +165,15 @@ export default function FormularioLocatario({ onClose, onSuccess }) {
       };
 
       const token = localStorage.getItem("@gesimo:token");
-      await api.post("/locatarios", payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (initialData && initialData.id) {
+        await api.patch(`/locatarios/${initialData.id}`, payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        await api.post("/locatarios", payload, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
 
       onSuccess();
       onClose();

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
-import { Plus, Home, Eye, Edit2, FileText, Trash2 } from "lucide-react"; 
+import { Plus, Home, Eye, Edit2, FileText, Trash2, AlertTriangle } from "lucide-react"; 
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -27,6 +27,22 @@ export default function Imoveis() {
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [modalAberto, setModalAberto] = useState(false);
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Deseja realmente apagar este imóvel?")) {
+      try {
+        const token = localStorage.getItem("@gesimo:token");
+        await api.delete(`/imoveis/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        carregarImoveis();
+      } catch (erro) {
+        console.error("Erro ao apagar imóvel:", erro);
+        alert("Erro ao apagar imóvel");
+      }
+    }
+  };
+
 
   // Colunas espelhadas EXATAMENTE como no protótipo image_fb251e.jpg
   const colunasDaTabela = [
@@ -89,6 +105,7 @@ export default function Imoveis() {
       });
 
       const dadosBrutos = resposta.data.data || resposta.data;
+      const isAdmin = localStorage.getItem("@gesimo:role") === "ADMIN";
 
       // Formatando os dados para a interface limpa
       const imoveisFormatados = dadosBrutos.map((imovel) => {
@@ -115,15 +132,15 @@ export default function Imoveis() {
             <div className="flex justify-end">
               <MenuAcoes 
                 opcoes={[
- { 
-                    label: 'Visualizar imóvel', 
+                  { 
+                    label: 'Visualizar', 
                     icon: Eye, 
                     onClick: () => navigate(`/imoveis/${imovel.id}`) 
                   },
                   { 
                     label: 'Editar', 
                     icon: Edit2, 
-                    onClick: () => console.log(`Editar imóvel ${imovel.id}`) 
+                    onClick: () => navigate(`/imoveis/${imovel.id}?edit=true`) 
                   },
                   { 
                     label: 'Ver contratos', 
@@ -131,11 +148,12 @@ export default function Imoveis() {
                     onClick: () => console.log(`Contratos do imóvel ${imovel.id}`) 
                   },
                   { 
-                    label: 'Deletar imóvel', 
+                    label: 'Apagar', 
                     icon: Trash2, 
-                    danger: true, // Texto em vermelho
-                    onClick: () => console.log(`Soft delete no imóvel ${imovel.id}`) 
+                    danger: true, 
+                    onClick: () => handleDelete(imovel.id) 
                   },
+                  ...(isAdmin ? [{ label: "Hard Delete (Em breve)", icon: AlertTriangle, danger: true, onClick: () => alert("Ainda não implementado. Rota não disponível.") }] : [])
                 ]} 
               />
             </div>

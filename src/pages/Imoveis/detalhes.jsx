@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { UploadCloud, FileText, Edit, MapPin, ArrowLeft } from "lucide-react";
+import { UploadCloud, FileText, Edit, MapPin, ArrowLeft, Trash2, AlertCircle } from "lucide-react";
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
 import Badge from "../../components/Badge";
-import Button from "../../components/Button"
+import Button from "../../components/Button";
 import ModalContainer from "../../components/ModalContainer";
 import FormularioEdicaoImovel from "../../components/Formularios/FormularioEdicaoImovel";
 import FormularioContrato from "../../components/Formularios/FormularioContrato";
-import { api } from "../../services/api"
+import FormularioDespesa from "../../components/Formularios/FormularioDespesas"; 
+import { api } from "../../services/api";
 
 export default function DetalhesImovel() {
   const { id } = useParams();
@@ -19,6 +20,7 @@ export default function DetalhesImovel() {
   const [abaAtiva, setAbaAtiva] = useState("contratos");
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
   const [modalContratoAberto, setModalContratoAberto] = useState(false);
+  const [modalDespesaAberto, setModalDespesaAberto] = useState(false);
 
   const [nomeUsuario, setNomeUsuario] = useState("");
   const [menuAberto, setMenuAberto] = useState(() => {
@@ -55,9 +57,6 @@ export default function DetalhesImovel() {
       }
     };
 
-    carregarDetalhes();
-
-  useEffect(() => {
     if (id) carregarDetalhes();
   }, [id]);
 
@@ -228,61 +227,105 @@ export default function DetalhesImovel() {
             </nav>
           </div>
 
+          {/* Área principal das Abas */}
           {(abaAtiva === "contratos" || abaAtiva === "despesas") && (
             <div className="flex gap-6">
-              <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    {abaAtiva === "contratos"
-                      ? "Contratos Ativos"
-                      : "Comprovantes de Despesas"}
-                  </h2>
-
-                  {/* Botão adicionado aqui! */}
-                  {abaAtiva === "contratos" && (
+              
+              {/* === ABA CONTRATOS === */}
+              {abaAtiva === "contratos" && (
+                <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Contratos Ativos
+                    </h2>
                     <Button
                       variant="primary"
                       onClick={() => setModalContratoAberto(true)}
                     >
                       + Novo Contrato
                     </Button>
-                  )}
-                </div>
+                  </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 border-b border-gray-100">
-                      <tr>
-                        <th className="px-4 py-3 font-medium">
-                          Nome do arquivo
-                        </th>
-                        <th className="px-4 py-3 font-medium">Data</th>
-                        <th className="px-4 py-3 font-medium">Tamanho</th>
-                        <th className="px-4 py-3 font-medium text-right">
-                          Ações
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      <tr className="hover:bg-gray-50/50 transition-colors group">
-                        <td className="px-4 py-4 flex items-center gap-3">
-                          <FileText size={18} className="text-gray-400" />
-                          <span className="font-medium text-gray-500">
-                            Nenhum arquivo encontrado...
-                          </span>
-                        </td>
-                        <td className="px-4 py-4 text-gray-500">-</td>
-                        <td className="px-4 py-4 text-gray-500">-</td>
-                        <td className="px-4 py-4 text-right"></td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 border-b border-gray-100">
+                        <tr>
+                          <th className="px-4 py-3 font-medium">Nome do arquivo</th>
+                          <th className="px-4 py-3 font-medium">Data</th>
+                          <th className="px-4 py-3 font-medium">Tamanho</th>
+                          <th className="px-4 py-3 font-medium text-right">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        <tr className="hover:bg-gray-50/50 transition-colors group">
+                          <td className="px-4 py-4 flex items-center gap-3">
+                            <FileText size={18} className="text-gray-400" />
+                            <span className="font-medium text-gray-500">
+                              Nenhum arquivo encontrado...
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-gray-500">-</td>
+                          <td className="px-4 py-4 text-gray-500">-</td>
+                          <td className="px-4 py-4 text-right"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
+              )}
 
+              {/* === ABA DESPESAS === */}
+              {abaAtiva === "despesas" && (
+                <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      Histórico de Despesas
+                    </h2>
+                    <Button
+                      variant="primary"
+                      onClick={() => setModalDespesaAberto(true)}
+                    >
+                      + Nova Despesa
+                    </Button>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead className="text-xs text-gray-500 uppercase bg-gray-50/50 border-b border-gray-100">
+                        <tr>
+                          <th className="px-4 py-3 font-medium">Descrição</th>
+                          <th className="px-4 py-3 font-medium">Tipo</th>
+                          <th className="px-4 py-3 font-medium">Vencimento</th>
+                          <th className="px-4 py-3 font-medium">Valor</th>
+                          <th className="px-4 py-3 font-medium">Status</th>
+                          <th className="px-4 py-3 font-medium text-right">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        <tr className="hover:bg-gray-50/50 transition-colors group">
+                          <td className="px-4 py-4 text-gray-900 font-medium">Manutenção Encanamento</td>
+                          <td className="px-4 py-4 text-gray-500">MANUTENCAO</td>
+                          <td className="px-4 py-4 text-gray-500">10/08/2026</td>
+                          <td className="px-4 py-4 text-gray-900 font-bold">R$ 250,00</td>
+                          <td className="px-4 py-4">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                              <AlertCircle size={12} /> Em Aberto
+                            </span>
+                          </td>
+                          <td className="px-4 py-4 text-right">
+                            <button className="text-blue-600 hover:text-blue-800 font-medium text-xs">Pagar</button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Upload compartilhado lateral */}
               <div className="w-72 shrink-0">
-                <div className="border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors p-8 flex flex-col items-center justify-center text-center cursor-pointer h-full min-h-[300px]">
-                  <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 text-blue-600">
+                <label className="border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 hover:bg-gray-100 transition-colors p-8 flex flex-col items-center justify-center text-center cursor-pointer h-full min-h-[300px] w-full block">
+                  <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center mb-4 text-blue-600 mx-auto">
                     <UploadCloud size={24} />
                   </div>
                   <p className="text-sm font-medium text-gray-700 mb-1">
@@ -298,13 +341,15 @@ export default function DetalhesImovel() {
                     accept=".pdf,image/*"
                     multiple
                   />
-                </div>
+                </label>
               </div>
             </div>
           )}
+
         </main>
       </div>
 
+      {/* MODAIS */}
       {modalEdicaoAberto && (
         <ModalContainer
           isOpen={modalEdicaoAberto}
@@ -322,7 +367,6 @@ export default function DetalhesImovel() {
         </ModalContainer>
       )}
 
-      {/* Modal de Contrato adicionado aqui! */}
       {modalContratoAberto && (
         <ModalContainer
           isOpen={modalContratoAberto}
@@ -339,6 +383,23 @@ export default function DetalhesImovel() {
           />
         </ModalContainer>
       )}
+
+      {modalDespesaAberto && (
+        <ModalContainer
+          isOpen={modalDespesaAberto}
+          onClose={() => setModalDespesaAberto(false)}
+          title="Nova Despesa"
+        >
+          <FormularioDespesa
+            imovelId={imovel.id}
+            onClose={() => setModalDespesaAberto(false)}
+            onSuccess={() => {
+              setModalDespesaAberto(false);
+              window.location.reload();
+            }}
+          />
+        </ModalContainer>
+      )}
     </div>
   );
-})}
+}

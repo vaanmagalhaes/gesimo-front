@@ -16,6 +16,8 @@ export default function Agendamentos() {
 
   const [nomeUsuario, setNomeUsuario] = useState("");
   const [modalAberto, setModalAberto] = useState(false);
+  // Estado para controlar a view do calendário
+  const [view, setView] = useState('week'); 
 
   useEffect(() => {
     setNomeUsuario(localStorage.getItem("@gesimo:nome") || "Usuário");
@@ -37,43 +39,39 @@ export default function Agendamentos() {
         <Header nome={nomeUsuario} />
 
         <div className="flex flex-1 overflow-hidden">
-          {/* COLUNA ESQUERDA: Calendário Principal (Claro) */}
           <main className="flex-1 flex flex-col bg-white overflow-y-auto">
             <div className="p-8 max-w-7xl mx-auto w-full flex-1 flex flex-col">
-              {/* Barra de Controles Superiores */}
+              
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
                   <button className="p-1 hover:bg-white rounded-md transition-colors">
                     <ChevronLeft size={20} className="text-gray-600" />
                   </button>
-                  <span className="px-3 text-sm font-medium text-gray-700">
-                    Hoje
-                  </span>
+                  <span className="px-3 text-sm font-medium text-gray-700">Hoje</span>
                   <button className="p-1 hover:bg-white rounded-md transition-colors">
                     <ChevronRight size={20} className="text-gray-600" />
                   </button>
                 </div>
 
+                {/* BOTÕES DE VIEW DINÂMICOS */}
                 <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg text-sm font-medium">
-                  <button className="px-4 py-1.5 text-gray-600 hover:text-gray-900 rounded-md">
-                    Dia
-                  </button>
-                  <button className="px-4 py-1.5 bg-red-500 text-white shadow-sm rounded-md">
-                    Semana
-                  </button>
-                  <button className="px-4 py-1.5 text-gray-600 hover:text-gray-900 rounded-md">
-                    Mês
-                  </button>
-                  <button className="px-4 py-1.5 text-gray-600 hover:text-gray-900 rounded-md">
-                    Ano
-                  </button>
+                  {['day', 'week', 'month', 'year'].map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => setView(mode)}
+                      className={`px-4 py-1.5 rounded-md transition-all ${
+                        view === mode 
+                          ? "bg-red-500 text-white shadow-sm" 
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                    >
+                      {mode.charAt(0).toUpperCase() + mode.slice(1)}
+                    </button>
+                  ))}
                 </div>
 
                 <div className="relative w-64">
-                  <Search
-                    size={16}
-                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                  />
+                  <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Procurar compromisso..."
@@ -82,15 +80,14 @@ export default function Agendamentos() {
                 </div>
               </div>
 
-              {/* Renderização da Grade */}
-              <Calendario />
+              {/* Passando o estado view como prop para o componente Calendario */}
+              <Calendario view={view} />
 
               <div className="flex-1"></div>
               <Footer />
             </div>
           </main>
 
-          {/* COLUNA DIREITA: Agenda Resumo (Escura) */}
           <aside className="w-80 xl:w-96 bg-[#181a20] flex flex-col border-l border-gray-800 shadow-xl z-10">
             <div className="p-6 flex items-center justify-between">
               <div className="flex gap-2">
@@ -98,7 +95,6 @@ export default function Agendamentos() {
                 <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
               </div>
-
               <button
                 onClick={() => setModalAberto(true)}
                 className="p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors flex items-center justify-center"
@@ -106,27 +102,18 @@ export default function Agendamentos() {
                 <Plus size={20} />
               </button>
             </div>
-
-            {/* Inserção do MiniCalendario e do Placeholder da lista de eventos */}
             <div className="px-6 flex-1 overflow-y-auto pb-6">
               <MiniCalendario />
-
               <div className="h-px bg-gray-800 my-6"></div>
             </div>
           </aside>
         </div>
       </div>
 
-      <ModalContainer
-        isOpen={modalAberto}
-        onClose={() => setModalAberto(false)}
-        title="Novo Compromisso"
-      >
+      <ModalContainer isOpen={modalAberto} onClose={() => setModalAberto(false)} title="Novo Compromisso">
         <FormularioAgendamento
           onClose={() => setModalAberto(false)}
-          onSuccess={() =>
-            console.log("Aqui entraremos com a função de recarregar a grade!")
-          }
+          onSuccess={() => console.log("Recarregar grade!")}
         />
       </ModalContainer>
     </div>

@@ -45,7 +45,7 @@ export default function Dashboard() {
           api.get('/imoveis', config).catch(() => ({ data: [] })),
           api.get('/locadores', config).catch(() => ({ data: [] })),
           api.get('/locatarios', config).catch(() => ({ data: [] })),
-          api.get('/compromissos', config).catch(() => ({ data: [] }))
+          api.get('/appointments', config).catch(() => ({ data: [] }))
         ]);
 
         // 2. Tenta buscar os dados visuais (Gráfico e Agenda) se a rota existir

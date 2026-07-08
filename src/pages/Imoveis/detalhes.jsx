@@ -1,15 +1,3 @@
-<<<<<<< HEAD
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { Download, MoreHorizontal, UploadCloud, FileText, Edit, MapPin, ArrowLeft, Trash2 } from 'lucide-react';
-import Sidebar from '../../components/Sidebar';
-import Header from '../../components/Header';
-import Badge from '../../components/Badge';
-import Button from '../../components/Button';
-import ModalContainer from '../../components/ModalContainer';
-import FormularioImovel from '../../components/Formularios/FormularioImovel';
-import { api } from '../../services/api';
-=======
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { UploadCloud, FileText, Edit, MapPin, ArrowLeft } from "lucide-react";
@@ -21,27 +9,16 @@ import ModalContainer from "../../components/ModalContainer";
 import FormularioEdicaoImovel from "../../components/Formularios/FormularioEdicaoImovel";
 import FormularioContrato from "../../components/Formularios/FormularioContrato";
 import { api } from "../../services/api"
->>>>>>> atualizacoes
 
 export default function DetalhesImovel() {
   const { id } = useParams();
   const navigate = useNavigate();
-<<<<<<< HEAD
-  const location = useLocation();
-  const isEditInit = new URLSearchParams(location.search).get('edit') === 'true';
-
-  const [imovel, setImovel] = useState(null);
-  const [carregando, setCarregando] = useState(true);
-  const [abaAtiva, setAbaAtiva] = useState('contratos');
-  const [modalEdicaoAberto, setModalEdicaoAberto] = useState(isEditInit);
-=======
 
   const [imovel, setImovel] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [abaAtiva, setAbaAtiva] = useState("contratos");
   const [modalEdicaoAberto, setModalEdicaoAberto] = useState(false);
   const [modalContratoAberto, setModalContratoAberto] = useState(false);
->>>>>>> atualizacoes
 
   const [nomeUsuario, setNomeUsuario] = useState("");
   const [menuAberto, setMenuAberto] = useState(() => {
@@ -63,21 +40,6 @@ export default function DetalhesImovel() {
     localStorage.setItem("@gesimo:menuAberto", JSON.stringify(menuAberto));
   }, [menuAberto]);
 
-<<<<<<< HEAD
-  const carregarDetalhes = async () => {
-    try {
-      const token = localStorage.getItem("@gesimo:token");
-      const resposta = await api.get(`/imoveis/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setImovel(resposta.data.data || resposta.data);
-    } catch (erro) {
-      console.error("Erro ao carregar detalhes do imóvel:", erro);
-    } finally {
-      setCarregando(false);
-    }
-  };
-=======
   useEffect(() => {
     const carregarDetalhes = async () => {
       try {
@@ -92,7 +54,8 @@ export default function DetalhesImovel() {
         setCarregando(false);
       }
     };
->>>>>>> atualizacoes
+
+    carregarDetalhes();
 
   useEffect(() => {
     if (id) carregarDetalhes();
@@ -171,10 +134,6 @@ export default function DetalhesImovel() {
                 </div>
               </div>
               <div className="flex gap-3">
-<<<<<<< HEAD
-                <Button variant="secondary" icon={Edit} onClick={() => setModalEdicaoAberto(true)}>Editar</Button>
-                <Button variant="primary" icon={Trash2} onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white border-none">Apagar</Button>
-=======
                 <Button
                   variant="secondary"
                   icon={Edit}
@@ -182,7 +141,6 @@ export default function DetalhesImovel() {
                 >
                   Editar
                 </Button>
->>>>>>> atualizacoes
               </div>
             </div>
 
@@ -328,11 +286,6 @@ export default function DetalhesImovel() {
         </main>
       </div>
 
-<<<<<<< HEAD
-      <ModalContainer isOpen={modalEdicaoAberto} onClose={() => setModalEdicaoAberto(false)} title="Editar Imóvel">
-        <FormularioImovel initialData={imovel} onClose={() => setModalEdicaoAberto(false)} onSuccess={carregarDetalhes} />
-      </ModalContainer>
-=======
       {modalEdicaoAberto && (
         <ModalContainer
           isOpen={modalEdicaoAberto}
@@ -367,7 +320,6 @@ export default function DetalhesImovel() {
           />
         </ModalContainer>
       )}
->>>>>>> atualizacoes
     </div>
   );
-}
+})}

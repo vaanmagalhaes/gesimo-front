@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
-<<<<<<< HEAD
 import { Plus, Home, Eye, Edit2, FileText, Trash2, AlertTriangle } from "lucide-react"; 
-=======
-import { Plus, Eye, Edit2, FileText, Trash2 } from "lucide-react"; 
->>>>>>> atualizacoes
 import Sidebar from "../../components/Sidebar";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
@@ -32,7 +28,6 @@ export default function Imoveis() {
   const [modalAberto, setModalAberto] = useState(false);
   const [imovelEdicao, setImovelEdicao] = useState(null);
 
-<<<<<<< HEAD
   const handleDelete = async (id) => {
     if (window.confirm("Deseja realmente apagar este imóvel?")) {
       try {
@@ -50,8 +45,6 @@ export default function Imoveis() {
 
 
   // Colunas espelhadas EXATAMENTE como no protótipo image_fb251e.jpg
-=======
->>>>>>> atualizacoes
   const colunasDaTabela = [
     { key: "imovelExibicao", label: "Imóvel" },
     { key: "tipoExibicao", label: "Tipo" },
@@ -101,25 +94,14 @@ export default function Imoveis() {
               <MenuAcoes 
                 opcoes={[
                   { 
-<<<<<<< HEAD
                     label: 'Visualizar', 
-=======
-                    label: 'Visualizar imóvel', 
->>>>>>> atualizacoes
                     icon: Eye, 
                     onClick: () => navigate(`/imoveis/${imovel.id}`) 
                   },
                   { 
                     label: 'Editar', 
                     icon: Edit2, 
-<<<<<<< HEAD
                     onClick: () => navigate(`/imoveis/${imovel.id}?edit=true`) 
-=======
-                    onClick: () => {
-                        setImovelEdicao(imovel); // Define o imóvel que será editado
-                        setModalAberto(true);    // Abre o modal
-                    }
->>>>>>> atualizacoes
                   },
                   { 
                     label: 'Ver contratos', 
@@ -129,13 +111,8 @@ export default function Imoveis() {
                   { 
                     label: 'Apagar', 
                     icon: Trash2, 
-<<<<<<< HEAD
                     danger: true, 
                     onClick: () => handleDelete(imovel.id) 
-=======
-                    danger: true,
-                    onClick: () => console.log(`Soft delete no imóvel ${imovel.id}`) 
->>>>>>> atualizacoes
                   },
                   ...(isAdmin ? [{ label: "Hard Delete (Em breve)", icon: AlertTriangle, danger: true, onClick: () => alert("Ainda não implementado. Rota não disponível.") }] : [])
                 ]} 

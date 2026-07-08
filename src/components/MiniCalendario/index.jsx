@@ -14,7 +14,7 @@ import {
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-export default function MiniCalendario() {
+export default function MiniCalendario({ agendamentos = [] }) {
   // Estados para controlar o mês visível e o dia que o usuário clicou
   const [mesAtual, setMesAtual] = useState(new Date());
   const [diaSelecionado, setDiaSelecionado] = useState(new Date());
@@ -81,8 +81,15 @@ export default function MiniCalendario() {
           const pertenceAoMes = isSameMonth(dia, mesAtual);
           const isSelecionado = isSameDay(dia, diaSelecionado);
           
-          // Lógica provisória para exibir os pontinhos do Figma (depois virão do banco)
-          const temEvento = pertenceAoMes && (dia.getDate() % 5 === 0); 
+          // Verifica se existem agendamentos para o dia atual
+          const agendamentosDoDia = (agendamentos || []).filter(ag => {
+            if (!ag.data) return false;
+            // Cria a data levando em consideração o timezone
+            const dt = new Date(ag.data);
+            // Ajusta o timezone se necessário, ou usa date-fns parse/isSameDay
+            return isSameDay(dt, dia);
+          });
+          const temEvento = pertenceAoMes && agendamentosDoDia.length > 0; 
 
           return (
             <div 

@@ -7,6 +7,7 @@ import Calendario from "../../components/Calendario";
 import MiniCalendario from "../../components/MiniCalendario";
 import ModalContainer from "../../components/ModalContainer";
 import FormularioAgendamento from "../../components/Formularios/FormularioAgendamento";
+import { api } from "../../services/api";
 
 export default function Agendamentos() {
   const [menuAberto, setMenuAberto] = useState(() => {
@@ -16,9 +17,23 @@ export default function Agendamentos() {
 
   const [nomeUsuario, setNomeUsuario] = useState("");
   const [modalAberto, setModalAberto] = useState(false);
+  const [agendamentos, setAgendamentos] = useState([]);
+
+  const fetchAgendamentos = async () => {
+    try {
+      const token = localStorage.getItem("@gesimo:token");
+      const { data } = await api.get('/agendamentos', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAgendamentos(data.data || data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   useEffect(() => {
     setNomeUsuario(localStorage.getItem("@gesimo:nome") || "Usuário");
+    fetchAgendamentos();
   }, []);
 
   useEffect(() => {
@@ -83,7 +98,7 @@ export default function Agendamentos() {
               </div>
 
               {/* Renderização da Grade */}
-              <Calendario />
+              <Calendario agendamentos={agendamentos} />
 
               <div className="flex-1"></div>
               <Footer />
@@ -109,7 +124,7 @@ export default function Agendamentos() {
 
             {/* Inserção do MiniCalendario e do Placeholder da lista de eventos */}
             <div className="px-6 flex-1 overflow-y-auto pb-6">
-              <MiniCalendario />
+              <MiniCalendario agendamentos={agendamentos} />
 
               <div className="h-px bg-gray-800 my-6"></div>
             </div>
@@ -124,9 +139,10 @@ export default function Agendamentos() {
       >
         <FormularioAgendamento
           onClose={() => setModalAberto(false)}
-          onSuccess={() =>
-            console.log("Aqui entraremos com a função de recarregar a grade!")
-          }
+          onSuccess={() => {
+            setModalAberto(false);
+            fetchAgendamentos();
+          }}
         />
       </ModalContainer>
     </div>

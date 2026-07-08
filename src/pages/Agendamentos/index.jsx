@@ -17,10 +17,8 @@ export default function Agendamentos() {
 
   const [nomeUsuario, setNomeUsuario] = useState("");
   const [modalAberto, setModalAberto] = useState(false);
-<<<<<<< HEAD
   // Estado para controlar a view do calendário
   const [view, setView] = useState('week'); 
-=======
   const [agendamentos, setAgendamentos] = useState([]);
 
   const fetchAgendamentos = async () => {
@@ -34,7 +32,6 @@ export default function Agendamentos() {
       console.error(err);
     }
   };
->>>>>>> e48a35470dc3659dab4281f2ac2b9843d66f148d
 
   useEffect(() => {
     setNomeUsuario(localStorage.getItem("@gesimo:nome") || "Usuário");
@@ -98,13 +95,8 @@ export default function Agendamentos() {
                 </div>
               </div>
 
-<<<<<<< HEAD
-              {/* Passando o estado view como prop para o componente Calendario */}
-              <Calendario view={view} />
-=======
-              {/* Renderização da Grade */}
-              <Calendario agendamentos={agendamentos} />
->>>>>>> e48a35470dc3659dab4281f2ac2b9843d66f148d
+              {/* Passando o estado view e agendamentos como props para o componente Calendario */}
+              <Calendario view={view} agendamentos={agendamentos} />
 
               <div className="flex-1"></div>
               <Footer />
@@ -126,12 +118,7 @@ export default function Agendamentos() {
               </button>
             </div>
             <div className="px-6 flex-1 overflow-y-auto pb-6">
-<<<<<<< HEAD
-              <MiniCalendario />
-=======
               <MiniCalendario agendamentos={agendamentos} />
-
->>>>>>> e48a35470dc3659dab4281f2ac2b9843d66f148d
               <div className="h-px bg-gray-800 my-6"></div>
             </div>
           </aside>
@@ -141,14 +128,10 @@ export default function Agendamentos() {
       <ModalContainer isOpen={modalAberto} onClose={() => setModalAberto(false)} title="Novo Compromisso">
         <FormularioAgendamento
           onClose={() => setModalAberto(false)}
-<<<<<<< HEAD
-          onSuccess={() => console.log("Recarregar grade!")}
-=======
           onSuccess={() => {
             setModalAberto(false);
             fetchAgendamentos();
           }}
->>>>>>> e48a35470dc3659dab4281f2ac2b9843d66f148d
         />
       </ModalContainer>
     </div>

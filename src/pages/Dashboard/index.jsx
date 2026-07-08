@@ -10,8 +10,10 @@ import { Home, UserCheck, Calendar, Users } from 'lucide-react';
 // Configuração da API
 import { api } from '../../services/api';
 import { parseJwt } from '../../utils/auth';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   
   // --- ESTADOS GLOBAIS DO DASHBOARD ---
   const [menuAberto, setMenuAberto] = useState(() => {
@@ -100,12 +102,12 @@ export default function Dashboard() {
 
           {/* CARDS DE KPI (Agora conectados ao banco) */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            {[ { title: "Imóveis", val: dados.imoveis, icon: Home }, { title: "Locadores", val: dados.locadores, icon: Users }, 
-               { title: "Locatários", val: dados.locatarios, icon: UserCheck }, { title: "Compromissos", val: dados.compromissos, icon: Calendar } 
+            {[ { title: "Imóveis", val: dados.imoveis, icon: Home, path: "/imoveis" }, { title: "Locadores", val: dados.locadores, icon: Users, path: "/locadores" }, 
+               { title: "Locatários", val: dados.locatarios, icon: UserCheck, path: "/locatarios" }, { title: "Compromissos", val: dados.compromissos, icon: Calendar, path: "/agendamentos" } 
             ].map((card, index) => {
               const Icon = card.icon;
               return (
-                <div key={index} className="bg-white p-6 rounded-xl border border-gray-100 flex flex-col group shadow-sm hover:shadow-md transition-shadow duration-300">
+                <div key={index} onClick={() => navigate(card.path)} className="bg-white p-6 rounded-xl border border-gray-100 flex flex-col group shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer">
                   <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center mb-4 border border-gray-100 group-hover:bg-blue-50 transition-colors">
                     <Icon size={20} className="text-gray-600 group-hover:text-blue-700 transition-colors" />
                   </div>

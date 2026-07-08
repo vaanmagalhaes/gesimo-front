@@ -93,7 +93,7 @@ export default function Locatarios() {
                 { label: "Visualizar", icon: Eye, onClick: () => navigate(`/locatarios/${loc.id}`) },
                 { label: "Editar", icon: Edit, onClick: () => navigate(`/locatarios/${loc.id}?edit=true`) },
                 { label: "Apagar", icon: Trash2, danger: true, onClick: () => handleDelete(loc.id) },
-                ...(isAdmin ? [{ label: "Hard Delete", icon: AlertTriangle, danger: true, onClick: () => handleHardDelete(loc.id) }] : [])
+                ...(isAdmin ? [{ label: "Remoção Definitiva", icon: AlertTriangle, danger: true, onClick: () => handleHardDelete(loc.id) }] : [])
               ]}
             />
           )

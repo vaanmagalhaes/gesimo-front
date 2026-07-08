@@ -43,6 +43,21 @@ export default function Imoveis() {
     }
   };
 
+  const handleHardDelete = async (id) => {
+    if (window.confirm("ATENÇÃO: Deseja apagar este imóvel PERMANENTEMENTE? (Hard Delete)")) {
+      try {
+        const token = localStorage.getItem("@gesimo:token");
+        await api.delete(`/imoveis/${id}/hard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        carregarImoveis();
+      } catch (erro) {
+        console.error("Erro ao apagar imóvel permanentemente:", erro);
+        alert("Erro ao apagar imóvel permanentemente");
+      }
+    }
+  };
+
 
   // Colunas espelhadas EXATAMENTE como no protótipo image_fb251e.jpg
   const colunasDaTabela = [
@@ -114,7 +129,7 @@ export default function Imoveis() {
                     danger: true, 
                     onClick: () => handleDelete(imovel.id) 
                   },
-                  ...(isAdmin ? [{ label: "Hard Delete (Em breve)", icon: AlertTriangle, danger: true, onClick: () => alert("Ainda não implementado. Rota não disponível.") }] : [])
+                  ...(isAdmin ? [{ label: "Remoção Definitiva", icon: AlertTriangle, danger: true, onClick: () => handleHardDelete(imovel.id) }] : [])
                 ]} 
               />
             </div>

@@ -61,6 +61,21 @@ export default function DetalhesLocatario() {
     }
   };
 
+  const handleHardDelete = async () => {
+    if (window.confirm("ATENÇÃO: Deseja apagar este locatário PERMANENTEMENTE? (Hard Delete)")) {
+      try {
+        const token = localStorage.getItem("@gesimo:token");
+        await api.delete(`/locatarios/${id}/hard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        navigate('/locatarios');
+      } catch (erro) {
+        console.error("Erro ao apagar locatário permanentemente:", erro);
+        alert("Erro ao apagar locatário permanentemente");
+      }
+    }
+  };
+
   if (carregando) {
     return (
       <div className="flex h-screen bg-slate-50 items-center justify-center font-sans">
@@ -116,6 +131,9 @@ export default function DetalhesLocatario() {
               <div className="flex gap-3">
                 <Button variant="secondary" icon={Edit} onClick={() => setModalEdicaoAberto(true)}>Editar</Button>
                 <Button variant="primary" icon={Trash2} onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white border-none">Apagar</Button>
+                {localStorage.getItem("@gesimo:role") === "ADMIN" && (
+                  <Button variant="primary" icon={Trash2} onClick={handleHardDelete} className="bg-red-900 hover:bg-red-950 text-white border-none">Remoção Definitiva</Button>
+                )}
               </div>
             </div>
 

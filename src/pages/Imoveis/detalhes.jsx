@@ -76,6 +76,21 @@ export default function DetalhesImovel() {
     }
   };
 
+  const handleHardDelete = async () => {
+    if (window.confirm("ATENÇÃO: Deseja apagar este imóvel PERMANENTEMENTE? (Hard Delete)")) {
+      try {
+        const token = localStorage.getItem("@gesimo:token");
+        await api.delete(`/imoveis/${id}/hard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        navigate('/imoveis');
+      } catch (erro) {
+        console.error("Erro ao apagar imóvel permanentemente:", erro);
+        alert("Erro ao apagar imóvel permanentemente");
+      }
+    }
+  };
+
   const formatarPalavra = (palavra) => {
     if (!palavra) return "";
     return palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase();
@@ -141,6 +156,10 @@ export default function DetalhesImovel() {
                 >
                   Editar
                 </Button>
+                <Button variant="primary" icon={Trash2} onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white border-none">Apagar</Button>
+                {localStorage.getItem("@gesimo:role") === "ADMIN" && (
+                  <Button variant="primary" icon={Trash2} onClick={handleHardDelete} className="bg-red-900 hover:bg-red-950 text-white border-none">Remoção Definitiva</Button>
+                )}
               </div>
             </div>
 

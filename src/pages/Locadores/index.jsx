@@ -42,6 +42,21 @@ export default function Locadores() {
     }
   };
 
+  const handleHardDelete = async (id) => {
+    if (window.confirm("ATENÇÃO: Deseja apagar este locador PERMANENTEMENTE? (Hard Delete)")) {
+      try {
+        const token = localStorage.getItem("@gesimo:token");
+        await api.delete(`/locadores/${id}/hard`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        carregarLocadores();
+      } catch (erro) {
+        console.error("Erro ao apagar locador permanentemente:", erro);
+        alert("Erro ao apagar locador permanentemente");
+      }
+    }
+  };
+
   const colunasDaTabela = [
     { key: "nome", label: "Nome" },
     { key: "cpf", label: "CPF" },
@@ -75,7 +90,7 @@ export default function Locadores() {
               { label: "Visualizar", icon: Eye, onClick: () => navigate(`/locadores/${locador.id}`) },
               { label: "Editar", icon: Edit, onClick: () => navigate(`/locadores/${locador.id}?edit=true`) },
               { label: "Apagar", icon: Trash2, danger: true, onClick: () => handleDelete(locador.id) },
-              ...(isAdmin ? [{ label: "Hard Delete (Em breve)", icon: AlertTriangle, danger: true, onClick: () => alert("Ainda não implementado. Rota de Hard Delete não disponível no backend para Locadores.") }] : [])
+              ...(isAdmin ? [{ label: "Remoção Definitiva", icon: AlertTriangle, danger: true, onClick: () => handleHardDelete(locador.id) }] : [])
             ]}
           />
         )
